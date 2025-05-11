@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Users - Admin{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2 class="mb-0"><i class="fas fa-users me-2"></i>Manage Users</h2>
+    </div>
+    <div class="card-body">
+        {% if users %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Joined</th>
+                        <th>Role</th>
+                        <th>Bookings</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.created_at.strftime('%d %b %Y') }}</td>
+                        <td>
+                            <span class="badge {% if user.is_admin %}bg-info{% else %}bg-secondary{% endif %}">
+                                {{ 'Admin' if user.is_admin else 'User' }}
+                            </span>
+                        </td>
+                        <td>{{ user.bookings.count() }}</td>
+                        <td>
+                            {% if user.id != current_user.id %}
+                            <form method="POST" action="{{ url_for('admin_toggle_admin', user_id=user.id) }}">
+                                <button type="submit" class="btn btn-sm {% if user.is_admin %}btn-outline-secondary{% else %}btn-outline-info{% endif %}">
+                                    {% if user.is_admin %}
+                                    <i class="fas fa-user me-1"></i>Remove Admin
+                                    {% else %}
+                                    <i class="fas fa-user-shield me-1"></i>Make Admin
+                                    {% endif %}
+                                </button>
+                            </form>
+                            {% else %}
+                            <span class="text-muted">Current User</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <p class="mb-0">No users found in the system.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

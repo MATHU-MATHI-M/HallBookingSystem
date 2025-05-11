@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Available Halls{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2><i class="fas fa-building me-2"></i>Available Halls</h2>
+
+    <div class="btn-group mb-4" role="group">
+        <a href="{{ url_for('halls', type='all') }}" class="btn btn-outline-primary {{ 'active' if hall_type == 'all' }}">All</a>
+        <a href="{{ url_for('halls', type='seminar') }}" class="btn btn-outline-primary {{ 'active' if hall_type == 'seminar' }}">Seminar Halls</a>
+        <a href="{{ url_for('halls', type='computer') }}" class="btn btn-outline-primary {{ 'active' if hall_type == 'computer' }}">Computer Centers</a>
+    </div>
+
+    <div class="row">
+        {% for hall in halls %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                {% if hall.image_url %}
+                <img src="{{ hall.image_url }}" class="card-img-top" alt="{{ hall.name }}">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ hall.name }}</h5>
+                    <p class="card-text">
+                        <small class="text-muted">{{ hall.hall_type.capitalize() }} - Capacity: {{ hall.capacity }} persons</small>
+                    </p>
+                    <p class="card-text">{{ hall.description }}</p>
+                    <p class="card-text"><strong>Features:</strong><br>{{ hall.features }}</p>
+                    {% if current_user.is_authenticated and not current_user.is_admin %}
+                    <a href="{{ url_for('create_booking', hall_id=hall.id) }}" class="btn btn-primary">Book This Hall</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

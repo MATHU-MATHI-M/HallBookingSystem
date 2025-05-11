@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}Book a Hall - College Hall Booking{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0"><i class="fas fa-calendar-plus me-2"></i>{{ title }}</h2>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('create_booking') }}">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            {{ form.hall_id.label(class="form-label") }}
+                            {% if form.hall_id.errors %}
+                                {{ form.hall_id(class="form-select is-invalid") }}
+                                <div class="invalid-feedback">
+                                    {% for error in form.hall_id.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.hall_id(class="form-select") }}
+                            {% endif %}
+                            <div class="form-text">Select a hall or computer center for your event</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            {{ form.event_name.label(class="form-label") }}
+                            {% if form.event_name.errors %}
+                                {{ form.event_name(class="form-control is-invalid") }}
+                                <div class="invalid-feedback">
+                                    {% for error in form.event_name.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.event_name(class="form-control", placeholder="Enter the name of your event") }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            {{ form.event_description.label(class="form-label") }}
+                            {% if form.event_description.errors %}
+                                {{ form.event_description(class="form-control is-invalid", rows=4) }}
+                                <div class="invalid-feedback">
+                                    {% for error in form.event_description.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.event_description(class="form-control", rows=4, placeholder="Provide details about your event") }}
+                            {% endif %}
+                            <div class="form-text">Brief description of the event or workshop</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form.start_time.label(class="form-label") }}
+                            {% if form.start_time.errors %}
+                                {{ form.start_time(class="form-control is-invalid", type="datetime-local") }}
+                                <div class="invalid-feedback">
+                                    {% for error in form.start_time.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.start_time(class="form-control", type="datetime-local") }}
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.end_time.label(class="form-label") }}
+                            {% if form.end_time.errors %}
+                                {{ form.end_time(class="form-control is-invalid", type="datetime-local") }}
+                                <div class="invalid-feedback">
+                                    {% for error in form.end_time.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.end_time(class="form-control", type="datetime-local") }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form.attendees.label(class="form-label") }}
+                            {% if form.attendees.errors %}
+                                {{ form.attendees(class="form-control is-invalid", type="number", min="1") }}
+                                <div class="invalid-feedback">
+                                    {% for error in form.attendees.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.attendees(class="form-control", type="number", min="1", placeholder="Estimated number of participants") }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        {{ form.submit(class="btn btn-primary btn-lg") }}
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer">
+                <div class="small">
+                    <i class="fas fa-info-circle me-2"></i>All bookings require admin approval before they are confirmed.
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Hall Availability</h5>
+            </div>
+            <div class="card-body">
+                <div id="calendar"></div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Booking Guidelines</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Bookings must be made at least 24 hours in advance</li>
+                    <li class="list-group-item">Maximum booking duration is 4 hours</li>
+                    <li class="list-group-item">All bookings require admin approval</li>
+                    <li class="list-group-item">Cancellations should be made at least 12 hours before the event</li>
+                    <li class="list-group-item">Equipment needs should be specified in the description</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize the calendar
+        var calendarEl = document.getElementById('calendar');
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek'
+            },
+            events: '/api/events',
+            eventClick: function(info) {
+                alert('Event: ' + info.event.title);
+            }
+        });
+        calendar.render();
+        
+        // Handle hall selection change to update the calendar
+        const hallSelect = document.getElementById('hall_id');
+        hallSelect.addEventListener('change', function() {
+            const hallId = this.value;
+            if (hallId) {
+                calendar.refetchEvents();
+                // Update the events source with the selected hall
+                calendar.removeAllEventSources();
+                calendar.addEventSource(`/api/events?hall_id=${hallId}`);
+            }
+        });
+        
+        // Update available time slots based on date selection
+        const startTimeInput = document.getElementById('start_time');
+        startTimeInput.addEventListener('change', function() {
+            const date = this.value.split('T')[0];
+            const hallId = hallSelect.value;
+            
+            if (date && hallId) {
+                // Fetch availability for the selected date and hall
+                fetch(`/api/availability?hall_id=${hallId}&date=${date}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Available slots:', data);
+                        // You could update the end time options based on availability
+                    })
+                    .catch(error => console.error('Error checking availability:', error));
+            }
+        });
+    });
+</script>
+{% endblock %}

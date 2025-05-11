@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - Admin{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2 class="mb-0"><i class="fas {% if hall %}fa-edit{% else %}fa-plus-circle{% endif %} me-2"></i>{{ title }}</h2>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{% if hall %}{{ url_for('admin_edit_hall', hall_id=hall.id) }}{% else %}{{ url_for('admin_create_hall') }}{% endif %}">
+            {{ form.hidden_tag() }}
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    {{ form.name.label(class="form-label") }}
+                    {% if form.name.errors %}
+                        {{ form.name(class="form-control is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.name.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.name(class="form-control", placeholder="Enter hall name") }}
+                    {% endif %}
+                </div>
+                <div class="col-md-6">
+                    {{ form.hall_type.label(class="form-label") }}
+                    {% if form.hall_type.errors %}
+                        {{ form.hall_type(class="form-select is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.hall_type.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.hall_type(class="form-select") }}
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    {{ form.capacity.label(class="form-label") }}
+                    {% if form.capacity.errors %}
+                        {{ form.capacity(class="form-control is-invalid", type="number", min="1") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.capacity.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.capacity(class="form-control", type="number", min="1", placeholder="Maximum capacity") }}
+                    {% endif %}
+                </div>
+                <div class="col-md-6">
+                    {{ form.image_url.label(class="form-label") }}
+                    {% if form.image_url.errors %}
+                        {{ form.image_url(class="form-control is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.image_url.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.image_url(class="form-control", placeholder="URL to hall image (optional)") }}
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                {{ form.description.label(class="form-label") }}
+                {% if form.description.errors %}
+                    {{ form.description(class="form-control is-invalid", rows=3) }}
+                    <div class="invalid-feedback">
+                        {% for error in form.description.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.description(class="form-control", rows=3, placeholder="Provide a description of the hall") }}
+                {% endif %}
+            </div>
+            
+            <div class="mb-3">
+                {{ form.features.label(class="form-label") }}
+                {% if form.features.errors %}
+                    {{ form.features(class="form-control is-invalid", rows=4) }}
+                    <div class="invalid-feedback">
+                        {% for error in form.features.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.features(class="form-control", rows=4, placeholder="Enter features, one per line") }}
+                {% endif %}
+                <div class="form-text">Enter each feature on a new line (e.g., "Projector", "Audio System", etc.)</div>
+            </div>
+            
+            <div class="mb-3 form-check">
+                {{ form.is_active(class="form-check-input") }}
+                {{ form.is_active.label(class="form-check-label") }}
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <a href="{{ url_for('admin_manage_halls') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Cancel
+                </a>
+                {{ form.submit(class="btn btn-primary") }}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

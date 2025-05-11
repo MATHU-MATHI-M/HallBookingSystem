@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}My Bookings - College Hall Booking{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h2 class="mb-0"><i class="fas fa-list-alt me-2"></i>My Bookings</h2>
+        <a href="{{ url_for('create_booking') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i>New Booking
+        </a>
+    </div>
+    <div class="card-body">
+        {% if bookings %}
+        <ul class="nav nav-tabs mb-3" id="bookingTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab" aria-controls="all" aria-selected="true">All</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab" aria-controls="pending" aria-selected="false">Pending</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="approved-tab" data-bs-toggle="tab" data-bs-target="#approved" type="button" role="tab" aria-controls="approved" aria-selected="false">Approved</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="rejected-tab" data-bs-toggle="tab" data-bs-target="#rejected" type="button" role="tab" aria-controls="rejected" aria-selected="false">Rejected</button>
+            </li>
+        </ul>
+        
+        <div class="tab-content" id="bookingTabsContent">
+            <div class="tab-pane fade show active" id="all" role="tabpanel" aria-labelledby="all-tab">
+                {% include 'booking_list.html' with context %}
+            </div>
+            <div class="tab-pane fade" id="pending" role="tabpanel" aria-labelledby="pending-tab">
+                {% with filtered_bookings = bookings|selectattr('status', 'equalto', 'pending')|list %}
+                    {% if filtered_bookings %}
+                        {% with bookings = filtered_bookings %}
+                            {% include 'booking_list.html' with context %}
+                        {% endwith %}
+                    {% else %}
+                        <div class="alert alert-info">You have no pending booking requests.</div>
+                    {% endif %}
+                {% endwith %}
+            </div>
+            <div class="tab-pane fade" id="approved" role="tabpanel" aria-labelledby="approved-tab">
+                {% with filtered_bookings = bookings|selectattr('status', 'equalto', 'approved')|list %}
+                    {% if filtered_bookings %}
+                        {% with bookings = filtered_bookings %}
+                            {% include 'booking_list.html' with context %}
+                        {% endwith %}
+                    {% else %}
+                        <div class="alert alert-info">You have no approved bookings.</div>
+                    {% endif %}
+                {% endwith %}
+            </div>
+            <div class="tab-pane fade" id="rejected" role="tabpanel" aria-labelledby="rejected-tab">
+                {% with filtered_bookings = bookings|selectattr('status', 'equalto', 'rejected')|list %}
+                    {% if filtered_bookings %}
+                        {% with bookings = filtered_bookings %}
+                            {% include 'booking_list.html' with context %}
+                        {% endwith %}
+                    {% else %}
+                        <div class="alert alert-info">You have no rejected bookings.</div>
+                    {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <p class="mb-0">You haven't made any booking requests yet.</p>
+        </div>
+        <div class="text-center mt-4">
+            <a href="{{ url_for('create_booking') }}" class="btn btn-lg btn-primary">Book a Hall Now</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Booking Details Modal -->
+<div class="modal fade" id="bookingDetailsModal" tabindex="-1" aria-labelledby="bookingDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="bookingDetailsModalLabel">Booking Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="bookingDetailsContent">
+                <!-- Content will be loaded dynamically -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-danger d-none" id="cancelBookingBtn">Cancel Booking</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Logic to show booking details in modal
+        const bookingDetailsModal = document.getElementById('bookingDetailsModal');
+        const bookingDetailsContent = document.getElementById('bookingDetailsContent');
+        const cancelBookingBtn = document.getElementById('cancelBookingBtn');
+        
+        document.querySelectorAll('.view-booking-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const bookingId = this.dataset.bookingId;
+                const bookingRow = document.querySelector(`tr[data-booking-id="${bookingId}"]`);
+                
+                // Create booking details HTML
+                const eventName = bookingRow.querySelector('.event-name').textContent;
+                const hallName = bookingRow.querySelector('.hall-name').textContent;
+                const startTime = bookingRow.querySelector('.start-time').textContent;
+                const endTime = bookingRow.querySelector('.end-time').textContent;
+                const status = bookingRow.querySelector('.status').textContent;
+                const description = bookingRow.dataset.description || 'No description provided';
+                
+                let detailsHtml = `
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h5>${eventName}</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Hall:</strong> ${hallName}</p>
+                            <p><strong>Date & Time:</strong> ${startTime} to ${endTime}</p>
+                            <p><strong>Status:</strong> <span class="badge ${getBadgeClass(status)}">${status}</span></p>
+                            <p><strong>Description:</strong> ${description}</p>
+                        </div>
+                    </div>
+                `;
+                
+                bookingDetailsContent.innerHTML = detailsHtml;
+                
+                // Show cancel button only for pending or approved bookings
+                if (status.toLowerCase() === 'pending' || status.toLowerCase() === 'approved') {
+                    cancelBookingBtn.classList.remove('d-none');
+                    cancelBookingBtn.dataset.bookingId = bookingId;
+                } else {
+                    cancelBookingBtn.classList.add('d-none');
+                }
+                
+                // Show the modal
+                const modal = new bootstrap.Modal(bookingDetailsModal);
+                modal.show();
+            });
+        });
+        
+        // Handle booking cancellation
+        cancelBookingBtn.addEventListener('click', function() {
+            const bookingId = this.dataset.bookingId;
+            if (confirm('Are you sure you want to cancel this booking?')) {
+                // Create a form to submit the cancellation request
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/booking/${bookingId}/cancel`;
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+        
+        // Helper function to get appropriate badge class based on status
+        function getBadgeClass(status) {
+            switch(status.toLowerCase()) {
+                case 'pending':
+                    return 'bg-warning';
+                case 'approved':
+                    return 'bg-success';
+                case 'rejected':
+                    return 'bg-danger';
+                default:
+                    return 'bg-secondary';
+            }
+        }
+    });
+</script>
+{% endblock %}

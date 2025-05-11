@@ -1,0 +1,22 @@
+
+{% extends "base.html" %}
+
+{% block title %}Login - College Hall Booking{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-8 text-center mb-4">
+        <h2>Choose Account Type</h2>
+        <div class="mt-4">
+            <div class="mb-4">
+                <a href="{{ url_for('user_login') }}" class="btn btn-primary btn-lg mx-2">User Login</a>
+                <a href="{{ url_for('user_register') }}" class="btn btn-outline-primary btn-lg mx-2">User Register</a>
+            </div>
+            <div>
+                <a href="{{ url_for('admin_login') }}" class="btn btn-danger btn-lg mx-2">Admin Login</a>
+                <a href="{{ url_for('admin_register') }}" class="btn btn-outline-danger btn-lg mx-2">Admin Register</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

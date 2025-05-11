@@ -1,0 +1,84 @@
+/* Custom CSS for Hall Booking System */
+
+/* Base styles and utilities */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+.footer {
+    margin-top: auto;
+}
+
+/* Card customizations */
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
+}
+
+/* Status badge styles */
+.badge {
+    font-size: 0.85em;
+    padding: 0.4em 0.6em;
+}
+
+/* Calendar customizations */
+.fc-event {
+    cursor: pointer;
+}
+
+.fc-toolbar-title {
+    font-size: 1.5em !important;
+}
+
+.mini-calendar .fc-toolbar-title {
+    font-size: 1.2em !important;
+}
+
+.mini-calendar {
+    height: 250px;
+}
+
+/* Form styles */
+.form-label {
+    font-weight: 500;
+}
+
+/* Admin dashboard styles */
+.navbar-brand i {
+    font-size: 1.2em;
+}
+
+/* Responsive fixes */
+@media (max-width: 768px) {
+    .fc-toolbar {
+        flex-direction: column;
+    }
+    
+    .fc-toolbar-chunk {
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* FullCalendar dark mode fixes */
+.fc-theme-standard td, .fc-theme-standard th {
+    border-color: var(--bs-gray-700);
+}
+
+.fc .fc-daygrid-day.fc-day-today {
+    background-color: var(--bs-primary-bg-subtle);
+}
+
+.fc-day-today .fc-daygrid-day-number {
+    color: var(--bs-primary);
+    font-weight: bold;
+}

@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}College Hall Booking System{% endblock %}
+
+{% block content %}
+<div class="jumbotron p-4 mb-4 bg-dark rounded-3">
+    <div class="container-fluid py-4">
+        <h1 class="display-5 fw-bold">Welcome to the College Hall Booking System</h1>
+        <p class="col-md-8 fs-4">Easily book seminar halls and computer centers for your college events and workshops.</p>
+        {% if not current_user.is_authenticated %}
+        <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+            <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg px-4 me-md-2">Login</a>
+            <a href="{{ url_for('register') }}" class="btn btn-outline-secondary btn-lg px-4">Register</a>
+        </div>
+        {% else %}
+        <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+            <a href="{{ url_for('create_booking') }}" class="btn btn-primary btn-lg px-4 me-md-2">Book a Hall</a>
+            <a href="{{ url_for('halls') }}" class="btn btn-outline-secondary btn-lg px-4">View Halls</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card mb-4 h-100">
+            <div class="card-body text-center">
+                <h2 class="card-title"><i class="fas fa-chalkboard me-2"></i>Seminar Halls</h2>
+                <p class="card-text">Perfect for conferences, presentations, and large gatherings.</p>
+                <div class="fs-1 mb-3">{{ seminar_halls }}</div>
+                <a href="{{ url_for('halls', type='seminar') }}" class="btn btn-outline-primary">View Seminar Halls</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card mb-4 h-100">
+            <div class="card-body text-center">
+                <h2 class="card-title"><i class="fas fa-laptop-code me-2"></i>Computer Centers</h2>
+                <p class="card-text">Equipped with computers for workshops, trainings, and coding events.</p>
+                <div class="fs-1 mb-3">{{ computer_centers }}</div>
+                <a href="{{ url_for('halls', type='computer') }}" class="btn btn-outline-success">View Computer Centers</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card mb-4 h-100">
+            <div class="card-body text-center">
+                <h2 class="card-title"><i class="fas fa-calendar-check me-2"></i>Active Bookings</h2>
+                <p class="card-text">Current and upcoming approved events across all venues.</p>
+                <div class="fs-1 mb-3">{{ active_bookings }}</div>
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('my_bookings') }}" class="btn btn-outline-info">View My Bookings</a>
+                {% else %}
+                <a href="{{ url_for('login') }}" class="btn btn-outline-info">Login to Book</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<h2 class="mb-4">Upcoming Events</h2>
+{% if upcoming_events %}
+<div class="row">
+    {% for event in upcoming_events %}
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">{{ event.event_name }}</h5>
+                <span class="badge {% if event.hall.hall_type == 'seminar' %}bg-primary{% else %}bg-success{% endif %}">
+                    {{ event.hall.hall_type|capitalize }}
+                </span>
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    <strong>Location:</strong> {{ event.hall.name }}<br>
+                    <strong>Date:</strong> {{ event.start_time.strftime('%d %B %Y') }}<br>
+                    <strong>Time:</strong> {{ event.start_time.strftime('%I:%M %p') }} - {{ event.end_time.strftime('%I:%M %p') }}
+                </p>
+                {% if event.event_description %}
+                <p class="card-text">{{ event.event_description|truncate(100) }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info">
+    <p class="mb-0">There are no upcoming events scheduled at this time.</p>
+</div>
+{% endif %}
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3>How It Works</h3>
+            </div>
+            <div class="card-body">
+                <ol class="list-group list-group-numbered mb-0">
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Browse Halls</div>
+                            Explore our available seminar halls and computer centers
+                        </div>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Select Date & Time</div>
+                            Check availability and choose your preferred time slot
+                        </div>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Submit Request</div>
+                            Fill in your event details and submit your booking request
+                        </div>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Await Confirmation</div>
+                            Admin will review and approve your booking
+                        </div>
+                    </li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3>Quick Links</h3>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    <a href="{{ url_for('halls', type='seminar') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-chalkboard me-2"></i>Seminar Halls
+                    </a>
+                    <a href="{{ url_for('halls', type='computer') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-laptop-code me-2"></i>Computer Centers
+                    </a>
+                    {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('create_booking') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-calendar-plus me-2"></i>Book a Hall
+                    </a>
+                    <a href="{{ url_for('my_bookings') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-list-alt me-2"></i>My Bookings
+                    </a>
+                    {% if current_user.is_admin %}
+                    <a href="{{ url_for('admin_dashboard') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard
+                    </a>
+                    {% endif %}
+                    {% else %}
+                    <a href="{{ url_for('login') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                    </a>
+                    <a href="{{ url_for('register') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-user-plus me-2"></i>Register
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

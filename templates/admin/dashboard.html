@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - College Hall Booking{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0"><i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="text-primary mb-3">
+                    <i class="fas fa-calendar-check fa-3x"></i>
+                </div>
+                <h3 class="mb-2">{{ total_bookings }}</h3>
+                <div class="text-muted">Total Bookings</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="text-warning mb-3">
+                    <i class="fas fa-clock fa-3x"></i>
+                </div>
+                <h3 class="mb-2">{{ pending_bookings }}</h3>
+                <div class="text-muted">Pending Approvals</div>
+            </div>
+            <div class="card-footer bg-transparent">
+                <a href="{{ url_for('admin_manage_bookings', status='pending') }}" class="btn btn-sm btn-outline-warning w-100">Review Pending</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="text-success mb-3">
+                    <i class="fas fa-building fa-3x"></i>
+                </div>
+                <h3 class="mb-2">{{ total_halls }}</h3>
+                <div class="text-muted">Available Halls</div>
+            </div>
+            <div class="card-footer bg-transparent">
+                <a href="{{ url_for('admin_manage_halls') }}" class="btn btn-sm btn-outline-success w-100">Manage Halls</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="text-info mb-3">
+                    <i class="fas fa-users fa-3x"></i>
+                </div>
+                <h3 class="mb-2">{{ total_users }}</h3>
+                <div class="text-muted">Registered Users</div>
+            </div>
+            <div class="card-footer bg-transparent">
+                <a href="{{ url_for('admin_manage_users') }}" class="btn btn-sm btn-outline-info w-100">Manage Users</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Pending Bookings</h5>
+                <a href="{{ url_for('admin_manage_bookings', status='pending') }}" class="btn btn-sm btn-outline-secondary">View All</a>
+            </div>
+            <div class="card-body">
+                {% with pending_list = recent_bookings|selectattr('status', 'equalto', 'pending')|list %}
+                    {% if pending_list %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Event</th>
+                                        <th>Hall</th>
+                                        <th>Date</th>
+                                        <th>Requester</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for booking in pending_list %}
+                                    <tr>
+                                        <td>{{ booking.event_name }}</td>
+                                        <td>{{ booking.hall.name }}</td>
+                                        <td>{{ booking.start_time.strftime('%d %b %Y') }}</td>
+                                        <td>{{ booking.user.username }}</td>
+                                        <td>
+                                            <a href="{{ url_for('admin_booking_detail', booking_id=booking.id) }}" class="btn btn-sm btn-primary">Review</a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info mb-0">
+                            <p class="mb-0">No pending bookings to approve.</p>
+                        </div>
+                    {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-calendar-day me-2"></i>Upcoming Events</h5>
+                <a href="{{ url_for('admin_manage_bookings', status='approved') }}" class="btn btn-sm btn-outline-secondary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if upcoming_events %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Event</th>
+                                    <th>Hall</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for event in upcoming_events %}
+                                <tr>
+                                    <td>{{ event.event_name }}</td>
+                                    <td>{{ event.hall.name }}</td>
+                                    <td>{{ event.start_time.strftime('%d %b %Y') }}</td>
+                                    <td>{{ event.start_time.strftime('%I:%M %p') }} - {{ event.end_time.strftime('%I:%M %p') }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info mb-0">
+                        <p class="mb-0">No upcoming events scheduled.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-calendar me-2"></i>Events Calendar</h5>
+            </div>
+            <div class="card-body">
+                <div id="adminCalendar"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('admin_manage_halls') }}" class="btn btn-outline-success">
+                        <i class="fas fa-building me-2"></i>Manage Halls
+                    </a>
+                    <a href="{{ url_for('admin_manage_bookings') }}" class="btn btn-outline-warning">
+                        <i class="fas fa-tasks me-2"></i>Manage Bookings
+                    </a>
+                    <a href="{{ url_for('admin_manage_users') }}" class="btn btn-outline-info">
+                        <i class="fas fa-users me-2"></i>Manage Users
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Booking Statistics</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="bookingStatsChart" width="400" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize the calendar
+        var calendarEl = document.getElementById('adminCalendar');
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            events: '/api/events',
+            eventClick: function(info) {
+                // Redirect to booking details
+                window.location.href = `/admin/booking/${info.event.id}`;
+            }
+        });
+        calendar.render();
+        
+        // Initialize the booking stats chart
+        var ctx = document.getElementById('bookingStatsChart').getContext('2d');
+        var chart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Approved', 'Pending', 'Rejected'],
+                datasets: [{
+                    data: [{{ approved_bookings }}, {{ pending_bookings }}, {{ total_bookings - approved_bookings - pending_bookings }}],
+                    backgroundColor: [
+                        'rgba(40, 167, 69, 0.8)',  // Success
+                        'rgba(255, 193, 7, 0.8)',  // Warning
+                        'rgba(220, 53, 69, 0.8)'   // Danger
+                    ],
+                    borderColor: [
+                        'rgba(40, 167, 69, 1)',
+                        'rgba(255, 193, 7, 1)',
+                        'rgba(220, 53, 69, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Booking Status Distribution'
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

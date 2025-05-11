@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Booking Details - Admin{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Booking Details</h2>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Event Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Event Name:</strong> {{ booking.event_name }}</p>
+                        <p><strong>Description:</strong> {{ booking.event_description or 'No description provided' }}</p>
+                        <p><strong>Date:</strong> {{ booking.start_time.strftime('%d %B %Y') }}</p>
+                        <p><strong>Time:</strong> {{ booking.start_time.strftime('%I:%M %p') }} to {{ booking.end_time.strftime('%I:%M %p') }}</p>
+                        <p><strong>Duration:</strong> {{ booking.duration_hours|round(1) }} hours</p>
+                        <p><strong>Expected Attendees:</strong> {{ booking.attendees or 'Not specified' }}</p>
+                    </div>
+                </div>
+                
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Hall Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Hall:</strong> {{ booking.hall.name }}</p>
+                        <p><strong>Type:</strong> {{ booking.hall.hall_type|capitalize }}</p>
+                        <p><strong>Capacity:</strong> {{ booking.hall.capacity }} people</p>
+                        {% if booking.hall.features %}
+                        <p><strong>Features:</strong></p>
+                        <ul>
+                            {% for feature in booking.hall.features.split('\n') %}
+                            <li>{{ feature }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">User Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Requested By:</strong> {{ booking.user.username }}</p>
+                        <p><strong>Email:</strong> {{ booking.user.email }}</p>
+                        <p><strong>Request Date:</strong> {{ booking.created_at.strftime('%d %B %Y %I:%M %p') }}</p>
+                        {% if booking.approved_by %}
+                        <p><strong>{{ 'Approved' if booking.status == 'approved' else 'Rejected' }} By:</strong> {{ booking.admin.username }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Update Booking Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('admin_booking_detail', booking_id=booking.id) }}">
+                            {{ form.hidden_tag() }}
+                            
+                            <div class="mb-3">
+                                {{ form.status.label(class="form-label") }}
+                                {{ form.status(class="form-select") }}
+                                <div class="form-text">Current status: {{ booking.status|capitalize }}</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                {{ form.admin_notes.label(class="form-label") }}
+                                {{ form.admin_notes(class="form-control", rows=3) }}
+                                <div class="form-text">Optional notes about this booking decision</div>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                {{ form.submit(class="btn btn-primary") }}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('admin_manage_bookings') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to All Bookings
+                            </a>
+                            {% if booking.status in ['pending', 'approved'] %}
+                            <button type="button" class="btn btn-danger" onclick="if(confirm('Are you sure you want to cancel this booking?')) { document.getElementById('cancel-form').submit(); }">
+                                <i class="fas fa-times me-2"></i>Cancel Booking
+                            </button>
+                            <form id="cancel-form" action="{{ url_for('cancel_booking', booking_id=booking.id) }}" method="POST" style="display: none;"></form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
